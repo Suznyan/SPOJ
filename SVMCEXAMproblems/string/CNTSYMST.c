@@ -27,7 +27,6 @@ int countSubstrings(char *s) {
 }
 
 int main() {
-    freopen("input.txt", "r", stdin);
     int T;
     scanf(" %d ", &T);
     for (int tc = 1; tc <= T; tc++) {
@@ -38,6 +37,7 @@ int main() {
         ans = countSubstrings(str);
 
         free(str);
+        str = NULL;
         printf("#%d %d\n", tc, ans);
     }
     return 0;

@@ -2,7 +2,6 @@
 #include <stdlib.h>
 
 int main() {
-    freopen("input.txt", "r", stdin);
     for (int tc = 1; tc <= 10; tc++) {
         int T;
         scanf("%d ", &T);
@@ -29,6 +28,8 @@ int main() {
         }
         free(s1);
         free(s2);
+        s1 = NULL;
+        s2 = NULL;
         printf("#%d %d\n", T, ans);
     }
     return 0;

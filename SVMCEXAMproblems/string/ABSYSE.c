@@ -10,7 +10,6 @@ bool allNumber(char s[]) {
 }
 
 int main() {
-    freopen("input.txt", "r", stdin);
     int T;
     scanf(" %d ", &T);
     for (int tc = 1; tc <= T; tc++) {

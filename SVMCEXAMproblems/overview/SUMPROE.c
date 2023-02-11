@@ -1,7 +1,6 @@
 #include <stdio.h>
 
 int main() {
-    // freopen("input.txt", "r", stdin);
     int T;
     scanf("%d", &T);
 

@@ -4,8 +4,6 @@
 int board[1000][1000];
 
 int main() {
-    freopen("input.txt", "r", stdin);
-
     for (int tc = 1; tc; tc++) {
         int row, col;
         scanf("%d %d", &row, &col);

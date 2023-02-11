@@ -35,7 +35,6 @@ bool SudokuCheck(char board[9][9], int boardSize) {
 }
 
 int main() {
-    freopen("input.txt", "r", stdin);
     int T;
     scanf("%d", &T);
 

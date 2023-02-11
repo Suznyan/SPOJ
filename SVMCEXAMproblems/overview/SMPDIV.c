@@ -2,7 +2,6 @@
 #include <stdlib.h>
 
 int main() {
-    freopen("input.txt", "r", stdin);
     int T;
     scanf("%d", &T);
     for (int tc = 0; tc < T; tc++) {
