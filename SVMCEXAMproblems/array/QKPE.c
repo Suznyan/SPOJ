@@ -1,198 +1,121 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int board[1000][1000];
+int remainingSafeSquare(int **board, int boardSize, int *boardColSize,
+                        int **queens, int queenCount, int **knights,
+                        int knightCount, int **pawns, int pawnCount) {
+    int res =
+        boardSize * (*boardColSize) - queenCount - knightCount - pawnCount;
+
+    /*
+    -------|i-2,j-1|-----|i-2,j+1|-------
+    i-1,j-2|-------|-----|-------|i-1,j+2
+    -------|-------| i,j |-------|-------
+    i+1,j-2|-------|-----|-------|i+1,j+2
+    -------|i+2,j-1|-----|i+2,j+1|-------
+    */
+    int knightMoves[8][2] = {{-2, 1}, {-1, 2}, {1, 2},   {2, 1},
+                             {2, -1}, {1, -2}, {-1, -2}, {-2, -1}};  // R-C
+    for (int i = 0; i < knightCount; i++) {
+        for (int k = 0; k < 8; k++) {
+            int R = knights[i][0] - 1 + knightMoves[k][0];
+            int C = knights[i][1] - 1 + knightMoves[k][1];
+            if (R >= boardSize || C >= *boardColSize || R < 0 || C < 0 ||
+                board[R][C] != 0)
+                continue;
+
+            res--;
+            board[R][C] = -1;
+        }
+    }
+
+    /*
+    i-1,j-1|i-1,j |i-1,j+1
+    i,j-1  | i,j  |i,j+1
+    i+1,j-1|i+1,j |i+1,j+1
+    */
+    int queenMoves[8][2] = {{-1, 0}, {-1, 1}, {0, 1},  {1, 1},
+                            {1, 0},  {1, -1}, {0, -1}, {-1, -1}};  // R-C
+    for (int i = 0; i < queenCount; i++) {
+        for (int q = 0; q < 8; q++) {
+            int R = queens[i][0] - 1 + queenMoves[q][0];
+            int C = queens[i][1] - 1 + queenMoves[q][1];
+            while (R < boardSize && C < *boardColSize && R >= 0 && C >= 0 &&
+                   board[R][C] != 1) {
+                if (board[R][C] == 0) {
+                    res--;
+                    board[R][C] = -1;
+                }
+                R += queenMoves[q][0];
+                C += queenMoves[q][1];
+            }
+        }
+    }
+    return res;
+}
 
 int main() {
     for (int tc = 1; tc; tc++) {
         int row, col;
         scanf("%d %d", &row, &col);
         if (row == 0 && col == 0) break;
+        // row++, col++;
+        int **board = malloc(row * sizeof *board);
+        for (int i = 0; i < row; i++) {
+            board[i] = malloc(col * sizeof **board);
+        }
 
+        // Clear the board
         for (int r = 0; r < row; r++) {
             for (int c = 0; c < col; c++) {
                 board[r][c] = 0;
             }
         }
 
-        int QueenCount;
-        scanf("%d", &QueenCount);
-        int queen[QueenCount][2];
-        for (int i = 0; i < QueenCount; i++) {
-            scanf("%d %d", &queen[i][0], &queen[i][1]);
-            board[queen[i][0] - 1][queen[i][1] - 1] = 1;
+        int queenCount, knightCount, pawnCount;
+        scanf("%d", &queenCount);
+        int **queens = malloc(queenCount * sizeof *queens);
+        for (int i = 0; i < queenCount; i++) {
+            queens[i] = malloc(2 * sizeof **queens);
+        }
+        for (int i = 0; i < queenCount; i++) {
+            scanf("%d %d", &queens[i][0], &queens[i][1]);
+            board[queens[i][0] - 1][queens[i][1] - 1] = 1;
         }
 
-        int knightCount;
         scanf("%d", &knightCount);
-        int knight[knightCount][2];
+        int **knights = malloc(knightCount * sizeof *knights);
         for (int i = 0; i < knightCount; i++) {
-            scanf("%d %d", &knight[i][0], &knight[i][1]);
-            board[knight[i][0] - 1][knight[i][1] - 1] = 1;
+            knights[i] = malloc(2 * sizeof **knights);
+        }
+        for (int i = 0; i < knightCount; i++) {
+            scanf("%d %d", &knights[i][0], &knights[i][1]);
+            board[knights[i][0] - 1][knights[i][1] - 1] = 1;
         }
 
-        int pawnCount;
         scanf("%d", &pawnCount);
-        int pawn[pawnCount][2];
+        int **pawns = malloc(pawnCount * sizeof *pawns);
         for (int i = 0; i < pawnCount; i++) {
-            scanf("%d %d", &pawn[i][0], &pawn[i][1]);
-            board[pawn[i][0] - 1][pawn[i][1] - 1] = 1;
+            pawns[i] = malloc(2 * sizeof **pawns);
+        }
+        for (int i = 0; i < pawnCount; i++) {
+            scanf("%d %d", &pawns[i][0], &pawns[i][1]);
+            board[pawns[i][0] - 1][pawns[i][1] - 1] = 1;
         }
 
-        int K_Rpath[] = {-2, -1, 1, 2, 2, 1, -1, -2};
-        int K_Cpath[] = {1, 2, 2, 1, -1, -2, -2, -1};
-
-        int ans = (row * col) - QueenCount - knightCount - pawnCount;
-
-        // Check Knights Paths
-        for (int k_no = 0; k_no < knightCount; k_no++) {
-            for (int i = 0; i < 8; i++) {
-                if ((knight[k_no][0] - 1 + K_Rpath[i]) < 0 ||
-                    (knight[k_no][1] - 1 + K_Cpath[i]) < 0 ||
-                    knight[k_no][0] - 1 + K_Rpath[i] >= row ||
-                    knight[k_no][1] - 1 + K_Cpath[i] >= col)
-                    continue;
-
-                if ((board[knight[k_no][0] - 1 + K_Rpath[i]]
-                          [knight[k_no][1] - 1 + K_Cpath[i]]) != 1 &&
-                    board[knight[k_no][0] - 1 + K_Rpath[i]]
-                         [knight[k_no][1] - 1 + K_Cpath[i]] != 2) {
-                    board[knight[k_no][0] - 1 + K_Rpath[i]]
-                         [knight[k_no][1] - 1 + K_Cpath[i]] = 2;
-                    ans--;
-                }
-            }
-        }
-
-        // Check Queens Paths
-        for (int q_no = 0; q_no < QueenCount; q_no++) {
-            // Upper Right Diagonal
-            int i = 1;
-            while (board[queen[q_no][0] - 1 - i][queen[q_no][1] - 1 + i] != 1) {
-                if ((queen[q_no][0] - 1 - i) < 0 ||
-                    (queen[q_no][1] - 1 + i) < 0 ||
-                    (queen[q_no][0] - 1 - i) >= row ||
-                    (queen[q_no][1] - 1 + i) >= col)
-                    break;
-                if (board[queen[q_no][0] - 1 - i][queen[q_no][1] - 1 + i] ==
-                    0) {
-                    board[queen[q_no][0] - 1 - i][queen[q_no][1] - 1 + i] = 2;
-                    ans--;
-                }
-                i++;
-            }
-
-            // lower Right Diagonal
-            i = 1;
-            while (board[queen[q_no][0] - 1 + i][queen[q_no][1] - 1 + i] != 1) {
-                if ((queen[q_no][0] - 1 + i) < 0 ||
-                    (queen[q_no][1] - 1 + i) < 0 ||
-                    (queen[q_no][0] - 1 + i) >= row ||
-                    (queen[q_no][1] - 1 + i) >= col)
-                    break;
-
-                if (board[queen[q_no][0] - 1 + i][queen[q_no][1] - 1 + i] ==
-                    0) {
-                    board[queen[q_no][0] - 1 + i][queen[q_no][1] - 1 + i] = 2;
-                    ans--;
-                }
-                i++;
-            }
-
-            // Upper left Diagonal
-            i = 1;
-            while (board[queen[q_no][0] - 1 - i][queen[q_no][1] - 1 - i] != 1) {
-                if ((queen[q_no][0] - 1 - i) < 0 ||
-                    (queen[q_no][1] - 1 - i) < 0 ||
-                    (queen[q_no][0] - 1 - i) >= row ||
-                    (queen[q_no][1] - 1 - i) >= col)
-                    break;
-
-                if (board[queen[q_no][0] - 1 - i][queen[q_no][1] - 1 - i] ==
-                    0) {
-                    board[queen[q_no][0] - 1 - i][queen[q_no][1] - 1 - i] = 2;
-                    ans--;
-                }
-                i++;
-            }
-
-            // Lower Left Diagonal
-            i = 1;
-            while (board[queen[q_no][0] - 1 + i][queen[q_no][1] - 1 - i] != 1) {
-                if ((queen[q_no][0] - 1 + i) < 0 ||
-                    (queen[q_no][1] - 1 - i) < 0 ||
-                    (queen[q_no][0] - 1 + i) >= row ||
-                    (queen[q_no][1] - 1 - i) >= col)
-                    break;
-                if (board[queen[q_no][0] - 1 + i][queen[q_no][1] - 1 - i] ==
-                    0) {
-                    board[queen[q_no][0] - 1 + i][queen[q_no][1] - 1 - i] = 2;
-                    ans--;
-                }
-                i++;
-            }
-
-            // Up
-            i = 1;
-            while (board[queen[q_no][0] - 1 - i][queen[q_no][1] - 1] != 1) {
-                if ((queen[q_no][0] - 1 - i) < 0 || (queen[q_no][1] - 1) < 0 ||
-                    (queen[q_no][0] - 1 - i) >= row ||
-                    (queen[q_no][1] - 1) >= col)
-                    break;
-                if (board[queen[q_no][0] - 1 - i][queen[q_no][1] - 1] == 0) {
-                    board[queen[q_no][0] - 1 - i][queen[q_no][1] - 1] = 2;
-                    ans--;
-                }
-                i++;
-            }
-
-            // Down
-            i = 1;
-            while (board[queen[q_no][0] - 1 + i][queen[q_no][1] - 1] != 1) {
-                if ((queen[q_no][0] - 1 + i) < 0 || (queen[q_no][1] - 1) < 0 ||
-                    (queen[q_no][0] - 1 + i) >= row ||
-                    (queen[q_no][1] - 1) >= col)
-                    break;
-
-                if (board[queen[q_no][0] - 1 + i][queen[q_no][1] - 1] == 0) {
-                    board[queen[q_no][0] - 1 + i][queen[q_no][1] - 1] = 2;
-                    ans--;
-                }
-                i++;
-            }
-
-            // left
-            i = 1;
-            while (board[queen[q_no][0] - 1][queen[q_no][1] - 1 - i] != 1) {
-                if ((queen[q_no][0] - 1) < 0 || (queen[q_no][1] - 1 - i) < 0 ||
-                    (queen[q_no][0] - 1) >= row ||
-                    (queen[q_no][1] - 1 - i) >= col)
-                    break;
-
-                if (board[queen[q_no][0] - 1][queen[q_no][1] - 1 - i] == 0) {
-                    board[queen[q_no][0] - 1][queen[q_no][1] - 1 - i] = 2;
-                    ans--;
-                }
-                i++;
-            }
-
-            // Right
-            i = 1;
-            while (board[queen[q_no][0] - 1][queen[q_no][1] - 1 + i] != 1) {
-                if ((queen[q_no][0] - 1) < 0 || (queen[q_no][1] - 1 + i) < 0 ||
-                    (queen[q_no][0] - 1) >= row ||
-                    (queen[q_no][1] - 1 + i) >= col)
-                    break;
-
-                if (board[queen[q_no][0] - 1][queen[q_no][1] - 1 + i] == 0) {
-                    board[queen[q_no][0] - 1][queen[q_no][1] - 1 + i] = 2;
-                    ans--;
-                }
-                i++;
-            }
-        }
+        int ans = remainingSafeSquare(board, row, &col, queens, queenCount,
+                                      knights, knightCount, pawns, pawnCount);
 
         printf("Board %d has %d safe squares.\n", tc, ans);
+        free(board);
+        free(queens);
+        free(knights);
+        free(pawns);
+        board = NULL;
+        queens = NULL;
+        knights = NULL;
+        pawns = NULL;
     }
+
     return 0;
 }

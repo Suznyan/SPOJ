@@ -1,73 +1,81 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+int OutOfReachCount(char **map, int mapSize, int *mapColSize) {
+    int paths[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+    int res = 0;
+    for (int r = 0; r < mapSize; r++) {
+        for (int c = 0; c < *mapColSize; c++) {
+            if (map[r][c] == 'H') res++;
+        }
+    }
+    for (int r = 0; r < mapSize; r++) {
+        for (int c = 0; c < *mapColSize; c++) {
+            if (map[r][c] == 'A') {
+                for (int i = 0; i < 4; i++) {
+                    int R = r + paths[i][0];
+                    int C = c + paths[i][1];
+                    if (R >= mapSize || C >= *mapColSize || R < 0 || C < 0 ||
+                        map[R][C] != 'H')
+                        continue;
+                    res--;
+                    map[R][C] = 'X';
+                }
+            } else if (map[r][c] == 'B') {
+                for (int i = 0; i < 4; i++) {
+                    int R = r + paths[i][0];
+                    int C = c + paths[i][1];
+                    for (int j = 0; j < 2; j++) {
+                        if (R >= mapSize || C >= *mapColSize || R < 0 || C < 0)
+                            continue;
+                        if (map[R][C] == 'H') {
+                            res--;
+                            map[R][C] = 'X';
+                        }
+                        R += paths[i][0];
+                        C += paths[i][1];
+                    }
+                }
+            } else if (map[r][c] == 'C') {
+                for (int i = 0; i < 4; i++) {
+                    int R = r + paths[i][0];
+                    int C = c + paths[i][1];
+                    for (int j = 0; j < 3; j++) {
+                        if (R >= mapSize || C >= *mapColSize || R < 0 || C < 0)
+                            continue;
+                        if (map[R][C] == 'H') {
+                            res--;
+                            map[R][C] = 'X';
+                        }
+                        R += paths[i][0];
+                        C += paths[i][1];
+                    }
+                }
+            } else
+                continue;
+        }
+    }
+    return res;
+}
+
 int main() {
+    char **map;
+    int row, col;
     int T;
     scanf("%d", &T);
-
     for (int tc = 1; tc <= T; tc++) {
-        int m, n;
-        int ans = 0;
-        scanf("%d %d", &m, &n);
-
-        char map[m][n];
-        for (int r = 0; r < m; r++) {
-            for (int c = 0; c < n; c++) {
+        scanf("%d %d ", &row, &col);
+        map = malloc(row * sizeof *map);
+        for (int i = 0; i < row; i++) {
+            map[i] = malloc(col * sizeof **map);
+        }
+        for (int r = 0; r < row; r++) {
+            for (int c = 0; c < col; c++) {
                 scanf(" %c", &map[r][c]);
-                if (map[r][c] == 'H') ans++;
             }
         }
 
-        int Ai[4] = {-1, 0, 1, 0};
-        int Aj[4] = {0, 1, 0, -1};
-
-        int Bi[8] = {-1, 0, 1, 0, -2, 0, 2, 0};
-        int Bj[8] = {0, 1, 0, -1, 0, 2, 0, -2};
-
-        int Ci[12] = {-1, 0, 1, 0, -2, 0, 2, 0, -3, 0, 3, 0};
-        int Cj[12] = {0, 1, 0, -1, 0, 2, 0, -2, 0, 3, 0, -3};
-
-        for (int r = 0; r < m; r++) {
-            for (int c = 0; c < n; c++) {
-                if (map[r][c] == 'A') {
-                    for (int i = 0; i < 4; i++) {
-                        if (r + Ai[i] < 0 || c + Aj[i] < 0 || r + Ai[i] >= m ||
-                            c + Aj[i] >= n)
-                            continue;
-                        if (map[r + Ai[i]][c + Aj[i]] == 'H') {
-                            map[r + Ai[i]][c + Aj[i]] = 'x';
-                            ans--;
-                        } else
-                            continue;
-                    }
-                } else if (map[r][c] == 'B') {
-                    for (int i = 0; i < 8; i++) {
-                        if (r + Bi[i] < 0 || c + Bj[i] < 0 || r + Bi[i] >= m ||
-                            c + Bj[i] >= n)
-                            continue;
-                        if (map[r + Bi[i]][c + Bj[i]] == 'H') {
-                            map[r + Bi[i]][c + Bj[i]] = 'x';
-                            ans--;
-                        } else
-                            continue;
-                    }
-                } else if (map[r][c] == 'C') {
-                    for (int i = 0; i < 12; i++) {
-                        if (r + Ci[i] < 0 || c + Cj[i] < 0 || r + Ci[i] >= m ||
-                            c + Cj[i] >= n)
-                            continue;
-                        if (map[r + Ci[i]][c + Cj[i]] == 'H') {
-                            map[r + Ci[i]][c + Cj[i]] = 'x';
-                            ans--;
-                        } else
-                            continue;
-                    }
-                } else
-                    continue;
-            }
-        }
-
-        printf("#%d %d\n", tc, ans);
+        printf("#%d %d\n", tc, OutOfReachCount(map, row, &col));
     }
     return 0;
 }

@@ -1,45 +1,52 @@
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+int *satisfiedMatrixStartPoint(int **matrix, int matrixSize, int subMatrixSize,
+                               int k) {
+    int *res = malloc(2 * sizeof(int));
+    int diff = INT_MAX, smallestSatisfiedSum = INT_MAX;
+    for (int i = 0; i < matrixSize - subMatrixSize + 1; i++) {
+        for (int j = 0; j < matrixSize - subMatrixSize + 1; j++) {
+            int SubSum = 0;
+            for (int g = i; g < subMatrixSize + i; g++) {
+                for (int h = j; h < subMatrixSize + j; h++) {
+                    SubSum += matrix[g][h];
+                }
+            }
+            int currDiff = abs(k - SubSum);
+            if (currDiff > diff) continue;
+            if (currDiff == diff && SubSum >= smallestSatisfiedSum) continue;
+            diff = currDiff;
+            smallestSatisfiedSum = SubSum;
+            res[0] = i;
+            res[1] = j;
+        }
+    }
+    return res;
+}
 
 int main() {
     int T;
     scanf("%d", &T);
     for (int tc = 1; tc <= T; tc++) {
-        int x, y;
         int N, M, K;
         scanf("%d %d %d", &N, &M, &K);
-        int arr[N][N];
+        int **matrix = malloc(N * sizeof *matrix);
+        for (int i = 0; i < N; i++) {
+            matrix[i] = malloc(N * sizeof **matrix);
+        }
 
-        for (int r = 0; r < N; r++) {
-            for (int c = 0; c < N; c++) {
-                scanf("%d", &arr[r][c]);
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                scanf("%d", &matrix[i][j]);
             }
         }
 
-        int smallest_different = 1000 ^ 99, smallest_sum = 1000 ^ 99;
+        int *location = satisfiedMatrixStartPoint(matrix, N, M, K);
 
-        for (int r = 0; r < N - M + 1; r++) {
-            for (int c = 0; c < N - M + 1; c++) {
-                int sum = 0;
-                for (int i = r; i < (M + r); i++) {
-                    for (int j = c; j < (M + c); j++) {
-                        sum += arr[i][j];
-                    }
-                }
-
-                int different = K - sum;
-                if (different < 0) different = 0 - different;
-                if (r == 0 && c == 0 || different < smallest_different ||
-                    different == smallest_different && sum < smallest_sum) {
-                    smallest_sum = sum;
-                    x = r;
-                    y = c;
-                    smallest_different = different;
-                }
-            }
-        }
-
-        printf("#%d %d %d\n", tc, x, y);
+        printf("#%d %d %d\n", tc, location[0], location[1]);
+        free(location);
+        location = NULL;
     }
     return 0;
 }

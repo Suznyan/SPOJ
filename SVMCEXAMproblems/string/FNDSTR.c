@@ -1,36 +1,36 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main() {
-    for (int tc = 1; tc <= 10; tc++) {
-        int T;
-        scanf("%d ", &T);
-        int ans = 0;
-
-        char *s1 = malloc(sizeof(char) * 11);
-        char *s2 = malloc(sizeof(char) * 1001);
-
-        scanf(" %s ", s1);
-
-        scanf("%[^\n]%*c", s2);
-
-        for (int i = 0; s2[i] != '\0'; i++) {
-            if (s2[i] == s1[0]) {
-                int flag = 0;
-                for (int j = 1; s1[j] != '\0'; j++) {
-                    if (s2[j + i] != s1[j]) {
-                        flag = 1;
-                        break;
-                    }
+int strCount(char* s1, char* s2) {
+    int res = 0;
+    for (int i = 0; s2[i] != '\0'; i++) {
+        int flag = 1;
+        if (s2[i] == s1[0]) {
+            for (int j = 1; j < s1[j] != '\0'; j++) {
+                if (s1[j] != s2[i + j]) {
+                    flag = 0;
+                    break;
                 }
-                if (flag == 0) ans++;
             }
+            if (flag == 1) res++;
         }
-        free(s1);
-        free(s2);
-        s1 = NULL;
-        s2 = NULL;
-        printf("#%d %d\n", T, ans);
+    }
+    return res;
+}
+
+int main() {
+    char *str1, *str2;
+    int T;
+    for (int tc = 1; tc <= 10; tc++) {
+        scanf(" %d ", &T);
+        str1 = malloc(10 * sizeof(char));
+        str2 = malloc(1000 * sizeof(char));
+        scanf("%[^\n]%*c", str1);
+        scanf("%[^\n]%*c", str2);
+
+        printf("#%d %d\n", T, strCount(str1, str2));
+        free(str1), free(str2);
+        str1 = NULL, str2 = NULL;
     }
     return 0;
 }

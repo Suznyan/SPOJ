@@ -1,44 +1,49 @@
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+int obstaclePassed(int **nums, int numsSize, int x, int y) {
+    int moves[8][2] = {{-1, 0}, {-1, 1}, {0, 1},  {1, 1},
+                       {1, 0},  {1, -1}, {0, -1}, {-1, -1}};
+
+    int res = 0;
+    for (;;) {
+        int smallest = INT_MAX;
+        int tempx = -1, tempy;
+        for (int i = 0; i < 8; i++) {
+            int R = x + moves[i][0];
+            int C = y + moves[i][1];
+            if (R >= numsSize || C >= numsSize || R < 0 || C < 0 ||
+                nums[R][C] <= nums[x][y] || nums[R][C] >= smallest)
+                continue;
+            smallest = nums[R][C];
+            tempx = R;
+            tempy = C;
+        }
+        if (tempx == -1) return res;
+        x = tempx;
+        y = tempy;
+        res++;
+    }
+}
 
 int main() {
     int T;
     scanf("%d", &T);
+    int **nums;
     for (int tc = 1; tc <= T; tc++) {
-        int n, x, y, ans = 0;
-        scanf("%d %d %d", &n, &x, &y);
-        int matrix[n][n];
-
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                scanf("%d ", &matrix[i][j]);
+        int size, x, y;
+        scanf("%d %d %d", &size, &x, &y);
+        nums = malloc(size * sizeof *nums);
+        for (int i = 0; i < size; i++) {
+            nums[i] = malloc(size * sizeof **nums);
+        }
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                scanf("%d", &nums[i][j]);
             }
         }
-
-        int i_Route[] = {-1, -1, 0, 1, 1, 1, 0, -1};
-        int j_Route[] = {0, 1, 1, 1, 0, -1, -1, -1};
-
-        for (;;) {
-            int sastified_num = 1001, new_x = -1, new_y = -1;
-            for (int i = 0; i < 8; i++) {
-                if (x + i_Route[i] < 0 || y + j_Route[i] < 0) continue;
-
-                if (matrix[x + i_Route[i]][y + j_Route[i]] > matrix[x][y] &&
-                    matrix[x + i_Route[i]][y + j_Route[i]] < sastified_num) {
-                    sastified_num = matrix[x + i_Route[i]][y + j_Route[i]];
-                    new_x = x + i_Route[i];
-                    new_y = y + j_Route[i];
-                }
-            }
-
-            if (new_x != -1 && new_y != -1) {
-                x = new_x;
-                y = new_y;
-                ans++;
-            }else break;
-        }
-
-        printf("#%d %d\n", tc, ans);
+        printf("#%d %d\n", tc, obstaclePassed(nums, size, x, y));
+        free(nums);
     }
     return 0;
 }
